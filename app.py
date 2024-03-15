@@ -3,9 +3,13 @@ import os
 import json
 from flask import Flask, render_template, request, jsonify
 from googletrans import Translator
+from whisper_translator import WhisperTranslator  
 
 app = Flask(__name__)
-translator = Translator()
+
+# Initialize translators
+google_translator = Translator()
+whisper_translator = WhisperTranslator()
 
 subprocess.Popen(["python", "desktop_app.py"])
 
@@ -59,11 +63,11 @@ def translate_text():
         target_language = data['target_language']
         source_language = data['source_language']
 
-        cached_translation = get_translation_from_cache(text, source_language, target_language)
-        if cached_translation:
-            return jsonify({'translation': cached_translation})
-
-        translation = translator.translate(text, dest=target_language, src=source_language).text
+        # Use selected translation model
+        if data.get('translation_model') == 'whisper':
+            translation = whisper_translator.translate(text, source_language, target_language)
+        else:
+            translation = google_translator.translate(text, dest=target_language, src=source_language).text
 
         add_translation_to_cache(text, source_language, target_language, translation)
 

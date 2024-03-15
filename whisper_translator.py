@@ -1,0 +1,2 @@
+class WhisperTranslator:
+    pass

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPlainTextEdit, QLabel, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QPlainTextEdit
 from PyQt5.QtCore import QTimer, Qt, QPoint
 from PyQt5.QtGui import QFont
 import sys
@@ -7,31 +7,18 @@ class TranslationApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.drag_position = QPoint()
         self.init_ui()
 
     def init_ui(self):
         layout = QVBoxLayout()
 
-        self.title_label = QLabel("Real-time Translation History")
-        self.title_label.setAlignment(Qt.AlignCenter)
-        self.title_label.setStyleSheet("background-color: black; color: white;")
-        self.title_label.setFont(QFont('Arial', 16))
-
-        close_button = QPushButton("X")
-        close_button.setStyleSheet("background-color: red; color: white;height:10;width:10;")
-        close_button.clicked.connect(self.close_app)
-
-        title_layout = QHBoxLayout()
-        title_layout.addWidget(self.title_label)
-        title_layout.addWidget(close_button)
-        
-        layout.addLayout(title_layout)
-
         self.translated_text_edit = QPlainTextEdit()
         self.translated_text_edit.setReadOnly(True)
-        self.translated_text_edit.setStyleSheet("background-color: black; color: white;")
-        self.translated_text_edit.setFont(QFont('Arial', 16))
+        
+        # Set font and styling to resemble YouTube captions
+        font = QFont("Arial", 14)  # Use Arial font with size 14
+        self.translated_text_edit.setFont(font)
+        self.translated_text_edit.setStyleSheet("background-color: black; color: white; border: none; padding: 10px;")
 
         layout.addWidget(self.translated_text_edit)
 
@@ -40,8 +27,15 @@ class TranslationApp(QWidget):
         self.setStyleSheet("background-color: black;")
         self.setWindowFlags(Qt.FramelessWindowHint)
 
-        self.setGeometry(300, 300, 800, 100)
+        self.update_displayed_content()
 
+        # Set initial size of the window
+        self.resize(800, 100)
+
+        # Dynamically adjust window size based on content
+        self.translated_text_edit.textChanged.connect(self.adjust_window_size)
+
+        # Start timer to periodically update displayed content
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_displayed_content)
         self.timer.start(1000)
@@ -49,29 +43,28 @@ class TranslationApp(QWidget):
     def update_displayed_content(self):
         try:
             with open("translated.txt", "r", encoding="utf-8") as file:
-                content = file.read().replace('\n', ' ').strip()
+                content = file.read().strip()
 
             self.translated_text_edit.setPlainText(content)
 
         except Exception as e:
             print(f"Error updating displayed content: {e}")
 
+    def adjust_window_size(self):
+        # Adjust window height based on text content
+        text_height = self.translated_text_edit.document().size().height()
+        self.resize(self.width(), int(text_height) + 20)  # Ensure both arguments are integers
+
     def mousePressEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self.title_label.rect().contains(event.pos()):
-            self.drag_position = event.globalPos() - self.frameGeometry().topLeft()
+        self.old_pos = event.globalPos()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton:
-            self.move(event.globalPos() - self.drag_position)
+        delta = QPoint(event.globalPos() - self.old_pos)
+        self.move(self.x() + delta.x(), self.y() + delta.y())
+        self.old_pos = event.globalPos()
 
     def mouseReleaseEvent(self, event):
-        self.drag_position = QPoint()
-
-    def close_app(self):
-        with open("translated.txt", "w", encoding="utf-8") as file:
-            file.write("")
-
-        self.close()
+        pass
 
     def closeEvent(self, event):
         with open("translated.txt", "w", encoding="utf-8") as file:
