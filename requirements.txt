@@ -1,5 +1,5 @@
 Flask==3.0.2
 googletrans==4.0.0rc1
+googletrans==3.0.0
 PyQt5==5.15.10
 PyQt5_sip==12.13.0
-shelve2==1.0
