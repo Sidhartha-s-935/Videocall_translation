@@ -1,9 +1,11 @@
-import subprocess
 import os
 import json
+import shelve
 from flask import Flask, render_template, request, jsonify
 from googletrans import Translator
 from whisper_translator import WhisperTranslator  
+import subprocess
+subprocess.Popen(["python", "desktop_app.py"])
 
 app = Flask(__name__)
 
@@ -11,20 +13,18 @@ app = Flask(__name__)
 google_translator = Translator()
 whisper_translator = WhisperTranslator()
 
-subprocess.Popen(["python", "desktop_app.py"])
-
-CACHE_FILE_PATH = 'translation_cache.json'
-translation_cache = {}
+CACHE_FILE_PATH = 'translation_cache.db'
 
 def load_cache():
     if os.path.exists(CACHE_FILE_PATH):
-        with open(CACHE_FILE_PATH, 'r') as file:
-            return json.load(file)
+        with shelve.open(CACHE_FILE_PATH) as db:
+            return dict(db)
     return {}
 
 def save_cache():
-    with open(CACHE_FILE_PATH, 'w') as file:
-        json.dump(translation_cache, file)
+    with shelve.open(CACHE_FILE_PATH) as db:
+        for key, value in translation_cache.items():
+            db[key] = value
 
 def update_file(filename, content):
     with open(filename, 'w', encoding='utf-8') as file:
