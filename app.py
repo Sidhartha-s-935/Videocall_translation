@@ -1,9 +1,10 @@
 import os
 import json
-import shelve
+import sqlite3
 from flask import Flask, render_template, request, jsonify
 from googletrans import Translator
 import subprocess
+
 subprocess.Popen(["python", "desktop_app.py"])
 
 app = Flask(__name__)
@@ -11,43 +12,51 @@ app = Flask(__name__)
 # Initialize translators
 google_translator = Translator()
 
-CACHE_FILE_PATH = 'translation_cache.db'
+DATABASE_FILE_PATH = 'translation_cache.db'
+TRANSLATED_FILE_PATH = 'translated.txt'
 
-def load_cache():
-    if os.path.exists(CACHE_FILE_PATH):
-        with shelve.open(CACHE_FILE_PATH) as db:
-            return dict(db)
-    return {}
+# Create table SQL statement
+CREATE_TABLE_SQL = '''
+CREATE TABLE IF NOT EXISTS translations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT,
+    source_language TEXT,
+    target_language TEXT,
+    translation TEXT
+)
+'''
 
-def save_cache():
-    with shelve.open(CACHE_FILE_PATH) as db:
-        for key, value in translation_cache.items():
-            db[key] = value
+# Function to establish database connection
+def get_database_connection():
+    conn = sqlite3.connect(DATABASE_FILE_PATH)
+    conn.execute(CREATE_TABLE_SQL)  # Create table if not exists
+    conn.commit()
+    return conn
 
-def update_file(filename, content):
-    with open(filename, 'w', encoding='utf-8') as file:
-        file.write(content + '\n')
+# Function to add translation to the database and update translated.txt
+def add_translation_to_database(text, source_language, target_language, translation):
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO translations (text, source_language, target_language, translation) VALUES (?, ?, ?, ?)',
+                   (text, source_language, target_language, translation))
+    conn.commit()
+    conn.close()
+    update_translated_file(translation)
 
-def get_translation_from_cache(text, source_language, target_language):
-    key = f"{text}_{source_language}_{target_language}"
-    return translation_cache.get(key)
+# Function to update translated.txt file
+def update_translated_file(translation):
+    with open(TRANSLATED_FILE_PATH, 'w', encoding='utf-8') as file:
+        file.write(translation + '\n')
 
-def add_translation_to_cache(text, source_language, target_language, translation):
-    update_file("transcript.txt", text)
-    update_file("translated.txt", translation)
-    key = f"{text}_{source_language}_{target_language}"
-    translation_cache[key] = translation
-    save_cache()
-
-@app.before_request
-def before_first_request():
-    if not hasattr(app, 'has_run_before_first_request'):
-        load_cache_on_startup()
-        app.has_run_before_first_request = True
-
-def load_cache_on_startup():
-    global translation_cache
-    translation_cache = load_cache()
+# Function to retrieve translation from the database
+def get_translation_from_database(text, source_language, target_language):
+    conn = get_database_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT translation FROM translations WHERE text = ? AND source_language = ? AND target_language = ?',
+                   (text, source_language, target_language))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
 
 @app.route('/')
 def index():
@@ -61,9 +70,11 @@ def translate_text():
         target_language = data['target_language']
         source_language = data['source_language']
         
-        translation = google_translator.translate(text, dest=target_language, src=source_language).text
+        translation = get_translation_from_database(text, source_language, target_language)
 
-        add_translation_to_cache(text, source_language, target_language, translation)
+        if translation is None:
+            translation = google_translator.translate(text, dest=target_language, src=source_language).text
+            add_translation_to_database(text, source_language, target_language, translation)
 
         return jsonify({'translation': translation})
 
