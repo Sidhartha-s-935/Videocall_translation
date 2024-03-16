@@ -12,32 +12,33 @@
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f7fafc;
+        background-color: #dcd6f7;
         color: #1e293b;
       }
 
       .dashboard-header {
-        background-color: #4a90e2;
+        background-color: #a6b1e1;
+        color: #424874;
       }
 
       .btn-primary {
-        background-color: #4c51bf;
+        background-color: #424874;
         color: #fff;
         transition: all 0.3s ease;
       }
 
       .btn-primary:hover {
-        background-color: #434190;
+        background-color: #2c315e;
       }
 
       .btn-danger {
-        background-color: #f43f5e;
+        background-color: #be2424;
         color: #fff;
         transition: all 0.3s ease;
       }
 
       .btn-danger:hover {
-        background-color: #d7374a;
+        background-color: #a0153e;
       }
 
       .btn-dark-mode {
@@ -94,7 +95,7 @@
 
   <body>
     <header class="dashboard-header py-4 px-8">
-      <h1 class="text-3xl font-semibold text-white">
+      <h1 class="text-3xl font-semibold text-#424874">
         Real-time Translation Dashboard
       </h1>
     </header>
@@ -103,10 +104,10 @@
         <div class="bg-white rounded-lg p-6 shadow-md">
           <h2 class="text-xl font-semibold mb-4">Translation Settings</h2>
           <form id="translationForm">
-            <div class="mb-4">
+            <div class="mb-4 flex">
               <label
                 for="sourceLanguage"
-                class="block text-gray-700 font-medium"
+                class="block text-gray-700 m-2 font-medium"
                 >Source Language:</label
               >
               <select id="sourceLanguage" class="form-select">
@@ -125,10 +126,10 @@
                 <option value="ar">Arabic</option>
               </select>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 flex">
               <label
                 for="targetLanguage"
-                class="block text-gray-700 font-medium"
+                class="block text-gray-700 m-2 font-medium"
                 >Target Language:</label
               >
               <select id="targetLanguage" class="form-select">
@@ -151,16 +152,16 @@
               <button
                 type="button"
                 onclick="startTranslation()"
-                class="btn btn-primary w-32 rounded-md"
+                class="btn btn-primary w-32 rounded-md p-3"
               >
-                Start Translation
+                Start
               </button>
               <button
                 type="button"
                 onclick="stopTranslation()"
-                class="btn btn-danger w-32 rounded-md"
+                class="btn btn-danger w-32 p-3 rounded-md"
               >
-                Stop Translation
+                Stop
               </button>
             </div>
           </form>
@@ -169,7 +170,7 @@
           <h2 class="text-xl font-semibold mb-4">Translation Model</h2>
           <select id="translationModel" class="form-select">
             <option value="googletrans">Google Translate</option>
-            <option value="whisper">Whisper Translator</option>
+            <option value="whisper">Additional Models</option>
           </select>
         </div>
         <div class="bg-white rounded-lg p-6 shadow-md translation-output">
@@ -182,18 +183,7 @@
         </div>
       </div>
     </div>
-    <button
-      onclick="toggleDarkMode()"
-      class="fixed bottom-4 right-4 px-4 py-2 bg-gray-800 text-white rounded-full btn btn-dark-mode"
-    >
-      Light/Dark
-    </button>
     <script src="/static/script.js"></script>
-    <script>
-      function toggleDarkMode() {
-        document.body.classList.toggle("dark-mode");
-      }
-    </script>
     <script>
       // Simulating dynamic content
       document
