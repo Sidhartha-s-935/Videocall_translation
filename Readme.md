@@ -1,7 +1,8 @@
 <h1 align="center" style="border-bottom: none">
     <b>
-        TalkIt Out
+        <a href = "https://github.com/Sidhartha-s-935/Videocall_translation">TalkIt Out<a>
     </b>
+    <br>
     A Realtime Video Translation App <br>
 </h1>
 
@@ -20,11 +21,8 @@
 
 <div style="display: flex; flex-wrap: wrap;">
     <img src="https://cdn.discordapp.com/attachments/1155138775853322320/1218806742020788324/image.png?ex=6609013b&is=65f68c3b&hm=10ab87283e1a37539b8982f0af8a246ba28b28a340a979331ea6bd7fa23de837&" alt="Image 1" style="width: 30%; margin: 5px;">
-
     <img src="https://media.discordapp.net/attachments/1155138775853322320/1218806941107621898/image.png?ex=6609016b&is=65f68c6b&hm=e3fdec0b6363864afd80f0e9bc9196ff12ad9511d7ea4f0c7b74cd613a83a011&=&format=webp&quality=lossless&width=550&height=299" alt="Image 2" style="width: 30%; margin: 5px;">
-
     <img src="https://media.discordapp.net/attachments/1155138775853322320/1218807435985420309/image.png?ex=660901e1&is=65f68ce1&hm=50d6c5ff776180b2c8d199f94cd5c295832f7bfe44b08c1df4336223b267e853&=&format=webp&quality=lossless" alt="Image 3" style="width: 30%; margin: 5px;">
-
 </div>
 
 ## Problem statement
@@ -77,13 +75,13 @@ python app.py
 
 - step 5 : <b>To Translate Desktop audio</b>
 
-`Win+R`
+  - `Win+R`
 
-type ` mmsys.cpl` and run
+  - type ` mmsys.cpl` and run
 
-Enable the Stereo Mix and set it as default communication device under the recording tab.
+  - Enable the Stereo Mix and set it as default communication device under the recording tab.
 
-under Settings > System > Sounds : select Stereo Mix as input device
+  - under Settings > System > Sounds : select Stereo Mix as input device
 
 # What's next ?
 
