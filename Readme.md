@@ -1,6 +1,6 @@
 <h1 align="center" style="border-bottom: none">
     <b>
-        <a href = "https://github.com/Sidhartha-s-935/Videocall_translation">TalkIt Out<a>
+        <a href = "https://sidhartha-s-935.github.io/Videocall_translation/">TalkIt Out<a>
     </b>
     <br>
     A Realtime Video Translation App <br>
