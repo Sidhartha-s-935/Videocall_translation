@@ -15,7 +15,7 @@
 | Name        | Email                      |
 | ----------- | -------------------------- |
 | Sidhartha S | sidharthas935@gmail.com    |
-| K Rajit     | Rajitkumaran27@gmail.com   |
+| K Rajit     | rajitkumaran27@gmail.com   |
 | Pavana K    | pavanakomaragiri@gmail.com |
 | Malavika L  | malz311204@gmail.com       |
 
