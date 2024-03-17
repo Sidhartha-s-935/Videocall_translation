@@ -20,11 +20,11 @@
 | Malavika L  | malz311204@gmail.com       |
 
 <div style="display: flex; flex-wrap: wrap;">
-    <img src="https://cdn.discordapp.com/attachments/1155138775853322320/1218806742020788324/image.png?ex=6609013b&is=65f68c3b&hm=10ab87283e1a37539b8982f0af8a246ba28b28a340a979331ea6bd7fa23de837&" alt="Image 1" style="width: 30%; margin: 5px;">
-    <img src="https://media.discordapp.net/attachments/1155138775853322320/1218806941107621898/image.png?ex=6609016b&is=65f68c6b&hm=e3fdec0b6363864afd80f0e9bc9196ff12ad9511d7ea4f0c7b74cd613a83a011&=&format=webp&quality=lossless&width=550&height=299" alt="Image 2" style="width: 30%; margin: 5px;">
-    <img src="https://media.discordapp.net/attachments/1155138775853322320/1218807435985420309/image.png?ex=660901e1&is=65f68ce1&hm=50d6c5ff776180b2c8d199f94cd5c295832f7bfe44b08c1df4336223b267e853&=&format=webp&quality=lossless" alt="Image 3" style="width: 30%; margin: 5px;">
-    <img src="https://cdn.discordapp.com/attachments/1154800276075720836/1218841681839788082/image.png?ex=660921c5&is=65f6acc5&hm=8c1b8a975d5c6624f4fd4f7306a5eaa6ed7350ccd4a6305142ff50a8ae57fbfe&" alt="Image 3" style="width: 30%; margin: 5px;">
-    <img src="https://cdn.discordapp.com/attachments/1154800276075720836/1218841865965801517/image.png?ex=660921f1&is=65f6acf1&hm=d259266ca9188cf8a41365a99434cf9d3bdbb22aade4f34213fda51ebbf5bd1f&" alt="Image 3" style="width: 30%; margin: 5px;">
+    <img src="https://cdn.discordapp.com/attachments/1155138775853322320/1218806742020788324/image.png?ex=6609013b&is=65f68c3b&hm=10ab87283e1a37539b8982f0af8a246ba28b28a340a979331ea6bd7fa23de837&" alt="Image 1" style="width: 30%; margin: 10px;">
+    <img src="https://media.discordapp.net/attachments/1155138775853322320/1218806941107621898/image.png?ex=6609016b&is=65f68c6b&hm=e3fdec0b6363864afd80f0e9bc9196ff12ad9511d7ea4f0c7b74cd613a83a011&=&format=webp&quality=lossless&width=550&height=299" alt="Image 2" style="width: 30%; margin: 10px;">
+    <img src="https://media.discordapp.net/attachments/1155138775853322320/1218807435985420309/image.png?ex=660901e1&is=65f68ce1&hm=50d6c5ff776180b2c8d199f94cd5c295832f7bfe44b08c1df4336223b267e853&=&format=webp&quality=lossless" alt="Image 3" style="width: 30%; margin: 10px;">
+    <img src="https://cdn.discordapp.com/attachments/1154800276075720836/1218841681839788082/image.png?ex=660921c5&is=65f6acc5&hm=8c1b8a975d5c6624f4fd4f7306a5eaa6ed7350ccd4a6305142ff50a8ae57fbfe&" alt="Image 3" style="width: 30%; margin: 10px;">
+    <img src="https://cdn.discordapp.com/attachments/1154800276075720836/1218841865965801517/image.png?ex=660921f1&is=65f6acf1&hm=d259266ca9188cf8a41365a99434cf9d3bdbb22aade4f34213fda51ebbf5bd1f&" alt="Image 3" style="width: 30%; margin: 10px;">
     
 </div>
 
