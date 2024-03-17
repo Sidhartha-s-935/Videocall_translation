@@ -3,7 +3,7 @@ let recognition;
 function translateText(text) {
   const targetLanguage = document.getElementById("targetLanguage").value;
   const sourceLanguage = document.getElementById("sourceLanguage").value;
-  const translationModel = document.getElementById("translationModel").value; // Get selected translation model
+  const translationModel = document.getElementById("translationModel").value;
 
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -34,7 +34,7 @@ function translateText(text) {
       text: text,
       target_language: targetLanguage,
       source_language: sourceLanguage,
-      translation_model: translationModel, // Pass selected translation model
+      translation_model: translationModel,
     };
 
     xhr.send(JSON.stringify(data));

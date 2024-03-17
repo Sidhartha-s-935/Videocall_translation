@@ -9,13 +9,11 @@ subprocess.Popen(["python", "desktop_app.py"])
 
 app = Flask(__name__)
 
-# Initialize translators
 google_translator = Translator()
 
 DATABASE_FILE_PATH = 'translation_cache.db'
 TRANSLATED_FILE_PATH = 'translated.txt'
 
-# Create table SQL statement
 CREATE_TABLE_SQL = '''
 CREATE TABLE IF NOT EXISTS translations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,14 +24,12 @@ CREATE TABLE IF NOT EXISTS translations (
 )
 '''
 
-# Function to establish database connection
 def get_database_connection():
     conn = sqlite3.connect(DATABASE_FILE_PATH)
-    conn.execute(CREATE_TABLE_SQL)  # Create table if not exists
+    conn.execute(CREATE_TABLE_SQL)  
     conn.commit()
     return conn
 
-# Function to add translation to the database and update translated.txt
 def add_translation_to_database(text, source_language, target_language, translation):
     conn = get_database_connection()
     cursor = conn.cursor()
@@ -43,12 +39,10 @@ def add_translation_to_database(text, source_language, target_language, translat
     conn.close()
     update_translated_file(translation)
 
-# Function to update translated.txt file
 def update_translated_file(translation):
     with open(TRANSLATED_FILE_PATH, 'w', encoding='utf-8') as file:
         file.write(translation + '\n')
 
-# Function to retrieve translation from the database
 def get_translation_from_database(text, source_language, target_language):
     conn = get_database_connection()
     cursor = conn.cursor()
