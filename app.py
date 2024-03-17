@@ -1,5 +1,3 @@
-import os
-import json
 import sqlite3
 from flask import Flask, render_template, request, jsonify
 from googletrans import Translator
