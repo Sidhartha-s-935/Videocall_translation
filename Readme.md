@@ -10,14 +10,13 @@
 
 ## Team Details
 
-`Team number` : VH206
-
 | Name        | Email                      |
 | ----------- | -------------------------- |
 | Sidhartha S | sidharthas935@gmail.com    |
 | K Rajit     | rajitkumaran27@gmail.com   |
 | Pavana K    | pavanakomaragiri@gmail.com |
 | Malavika L  | malz311204@gmail.com       |
+| Stephen Paul| stephenpaul4040@gmail.com  |
 
 <div style="display: flex; flex-wrap: wrap;">
     <img src="https://cdn.discordapp.com/attachments/1155138775853322320/1218806742020788324/image.png?ex=6609013b&is=65f68c3b&hm=10ab87283e1a37539b8982f0af8a246ba28b28a340a979331ea6bd7fa23de837&" alt="Image 1" style="width: 30%; margin: 10px;">
@@ -93,6 +92,4 @@ decreased latency using any other large language models that is far more accurat
 We did plan on implementing WhisperAI API which has greater accuracy and decreased latency, but it needs a lot of computational power in order to run efficiently which hinders our approach on being user-friendly and easily accessible to a wide range of users
 One of the major show stoppers is ambient noise and accent/dialect adaptation which we will try to improve with regular updates
 
-## Declaration
 
-We confirm that the project showcased here was either developed entirely during the hackathon or underwent significant updates within the hackathon timeframe. We understand that if any plagiarism from online sources is detected, our project will be disqualified, and our participation in the hackathon will be revoked.
