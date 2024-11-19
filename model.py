@@ -27,7 +27,7 @@ class ContinuousTranscriber:
         
         # Audio collection parameters
         self.audio_buffer = []
-        self.max_buffer_size = sample_rate * 3  # 5-second buffer
+        self.max_buffer_size = sample_rate * 2  # 5-second buffer
         
         # Load transcription model and processor
         self.transcribe_model = AutoModelForSpeechSeq2Seq.from_pretrained(transcription_model).to(device)
@@ -44,7 +44,7 @@ class ContinuousTranscriber:
         
         # Transcription tracking
         self.last_full_transcription = ""
-        self.transcription_threshold = 0.8 # Similarity threshold
+        self.transcription_threshold = 0.8  # Similarity threshold
     
     def audio_callback(self, indata, frames, time, status):
         if status:
@@ -113,7 +113,7 @@ class ContinuousTranscriber:
                 channels=self.channels, 
                 samplerate=self.sample_rate
             ):
-                print("Listening...")
+                print("Listening... Press Ctrl+C to stop.")
                 
                 # Continuously transcribe and translate
                 while True:
@@ -151,3 +151,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
