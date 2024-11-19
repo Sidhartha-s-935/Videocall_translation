@@ -1,105 +1,70 @@
-import torch
-from transformers import pipeline
-import sounddevice as sd
-import numpy as np
-import queue
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 import threading
-import time
+from model import ContinuousTranscriber
 
-# Configuration
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-model_id = "openai/whisper-small"
+# Flask Application
+app = Flask(__name__)
+socketio = SocketIO(app)
 
-# Load model and pipeline
-pipe = pipeline(
-    "automatic-speech-recognition",
-    model=model_id,
-    device=0 if torch.cuda.is_available() else -1,
-)
+# Supported languages
+LANGUAGES = {
+    'en': 'English',
+    'hi': 'Hindi',
+    'ta': 'Tamil', 
+    'te': 'Telugu',
+    'bn': 'Bengali',
+    'es': 'Spanish',
+    'fr': 'French',
+    'de': 'German',
+    'it': 'Italian',
+    'ru': 'Russian'
+}
 
-class RealtimeTranscriber:
-    def __init__(self, sample_rate=16000, channels=1, chunk_duration=1.0):
-        self.sample_rate = sample_rate
-        self.channels = channels
-        self.chunk_duration = chunk_duration
-        self.chunk_size = int(sample_rate * chunk_duration)
-        
-        self.audio_queue = queue.Queue()
-        self.stop_event = threading.Event()
-        
-    def audio_callback(self, indata, frames, time, status):
-        if status:
-            print(f"Audio input status: {status}")
-        
-        # Convert to mono if stereo
-        if indata.ndim > 1:
-            indata = indata.mean(axis=1)
-        
-        self.audio_queue.put(indata.copy())
+# Global transcriber variable
+transcriber = None
+
+@app.route('/')
+def index():
+    return render_template('index.html', languages=LANGUAGES)
+
+@socketio.on('start_transcription')
+def handle_start_transcription(data):
+    global transcriber
     
-    def transcribe_chunk(self, audio_chunk):
-        try:
-            # Convert numpy array to float32 and normalize
-            audio_float = audio_chunk.astype(np.float32) / np.max(np.abs(audio_chunk))
-            
-            # Transcribe the audio chunk
-            result = pipe(audio_float)
-            
-            # Print transcription if text is not empty
-            if result and result.get('text', '').strip():
-                print("Transcription:", result['text'])
-        except Exception as e:
-            print(f"Transcription error: {e}")
+    def socket_callback(transcription_data):
+        # Emit transcription via SocketIO
+        socketio.emit('transcription_update', transcription_data)
     
-    def process_audio(self):
-        audio_buffer = []
-        while not self.stop_event.is_set():
-            try:
-                # Get audio chunk with a timeout to allow checking stop event
-                audio_chunk = self.audio_queue.get(timeout=0.1)
-                audio_buffer.append(audio_chunk)
-                
-                # When buffer reaches chunk size, process and clear
-                if len(np.concatenate(audio_buffer)) >= self.chunk_size:
-                    full_chunk = np.concatenate(audio_buffer)
-                    self.transcribe_chunk(full_chunk)
-                    audio_buffer.clear()
-            
-            except queue.Empty:
-                # Normal timeout, just continue
-                continue
-            except Exception as e:
-                print(f"Audio processing error: {e}")
+    # Get source language (optional)
+    source_language = data.get('source_language', 'en')
     
-    def start_transcription(self):
-        # Start audio input stream
-        try:
-            # Start processing thread
-            process_thread = threading.Thread(target=self.process_audio, daemon=True)
-            process_thread.start()
-            
-            # Start audio input stream
-            with sd.InputStream(
-                callback=self.audio_callback, 
-                channels=self.channels, 
-                samplerate=self.sample_rate
-            ):
-                print("Listening... Press Ctrl+C to stop.")
-                
-                # Keep main thread alive
-                while not self.stop_event.is_set():
-                    time.sleep(0.1)
-        
-        except KeyboardInterrupt:
-            print("\nStopping transcription...")
-        
-        finally:
-            # Set stop event to exit processing thread
-            self.stop_event.set()
+    # Get target translation languages
+    target_languages = data.get('target_languages', [])
+    
+    # If no target languages specified, just transcribe
+    if not target_languages:
+        target_languages = ['en']
+    
+    # Stop any existing transcription
+    if transcriber:
+        # Implement a stop method in your model if needed
+        del transcriber
+    
+    # Create transcriber for each target language
+    transcribers = []
+    for target_lang in target_languages:
+        trans = ContinuousTranscriber(
+            callback_fn=socket_callback, 
+            target_language=target_lang,
+            source_language=source_language
+        )
+        transcribers.append(trans)
+        # Start each transcriber in a separate thread
+        threading.Thread(target=trans.start_transcription, daemon=True).start()
 
 def main():
-    transcriber = RealtimeTranscriber()
-    transcriber.start_transcription()
+    socketio.run(app, debug=True, host='0.0.0.0')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
