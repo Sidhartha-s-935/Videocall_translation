@@ -20,6 +20,7 @@ socketio = SocketIO(
     engineio_logger=True,
     ping_timeout=60,
     ping_interval=25,
+    transport='websocket'
 )
 
 transcriber = None
@@ -42,18 +43,18 @@ def transcription_callback(transcription, translation):
             logger.warning("No connected clients to broadcast to")
             return
 
-        logger.debug(f"Broadcasting transcription: {transcription[:50]}...")
-        logger.debug(f"Broadcasting translation: {translation[:50] if translation else 'None'}...")
-
         data = {
             'transcription': transcription,
             'translation': translation
         }
-
-        # Emit to all clients without using 'to' or 'broadcast'
+        
+        logger.info(f"Emitting to {len(connected_clients)} clients: {data}")
+        
+        # Remove the broadcast parameter and emit directly
         socketio.emit('transcription_update', data)
         
-        logger.debug(f"Broadcast completed to {len(connected_clients)} clients")
+        logger.info("Emission completed successfully")
+        
     except Exception as e:
         logger.error(f"Error in transcription callback: {e}", exc_info=True)
 

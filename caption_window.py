@@ -6,7 +6,11 @@ from socketio import Client
 import threading
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 class SocketThread(QObject):
@@ -27,13 +31,17 @@ class SocketThread(QObject):
     def setup_socket_events(self):
         @self.socketio.on('connect')
         def on_connect():
-            logger.info("Caption window connected to server")
+            logger.info(f"Connected to server with SID: {self.socketio.sid}")
             self.connection_status.emit(True)
 
         @self.socketio.on('disconnect')
         def on_disconnect():
-            logger.info("Caption window disconnected from server")
+            logger.info("Disconnected from server")
             self.connection_status.emit(False)
+
+        @self.socketio.on('*')
+        def catch_all(event, data):
+            logger.debug(f"Received event {event}: {data}")
 
         @self.socketio.on('transcription_update')
         def on_transcription(data):
@@ -43,12 +51,14 @@ class SocketThread(QObject):
                     transcription = data.get('transcription', '')
                     translation = data.get('translation', '')
                     
-                    # Only emit if we have actual content
-                    if transcription or translation:
-                        self.transcription_received.emit(
-                            transcription or 'Waiting for speech...',
-                            translation or 'Translation will appear here...'
-                        )
+                    logger.debug(f"Processing transcription: {transcription}")
+                    logger.debug(f"Processing translation: {translation}")
+                    
+                    # Emit the signal in the main thread
+                    self.transcription_received.emit(
+                        transcription or 'Waiting for speech...',
+                        translation or 'Translation will appear here...'
+                    )
             except Exception as e:
                 logger.error(f"Error processing transcription update: {e}", exc_info=True)
 
@@ -146,20 +156,20 @@ class CaptionWindow(QMainWindow):
         self.socket_thread.daemon = True
         self.socket_thread.start()
 
-    def update_labels(self, transcription, translation):
-        try:
-            if transcription:
-                self.transcription_label.setText(transcription)
-            if translation:
-                self.translation_label.setText(translation)
-        except Exception as e:
-            logger.error(f"Error updating labels: {e}", exc_info=True)
-
     def _connect_socket(self):
         success = self.socket_handler.connect_to_server()
-        if not success:
-            print("Failed to connect to server")
-   
+        logger.info(f"Socket connection {'successful' if success else 'failed'}")
+
+    def update_labels(self, transcription, translation):
+        try:
+            logger.debug(f"Updating labels - Transcription: {transcription}")
+            logger.debug(f"Updating labels - Translation: {translation}")
+            
+            self.transcription_label.setText(transcription)
+            self.translation_label.setText(translation)
+        except Exception as e:
+            logger.error(f"Error updating labels: {e}", exc_info=True)   
+
     def closeEvent(self, event):
         if self.socket_handler:
             self.socket_handler.disconnect()

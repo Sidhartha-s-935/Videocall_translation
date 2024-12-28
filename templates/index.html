@@ -93,12 +93,12 @@
     </div>
 
     <script>
-        // Initialize socket with explicit configuration
-        const socket = io('http://localhost:5000', {
-            transports: ['websocket', 'polling'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+        // Enable Socket.IO debugging
+        localStorage.debug = '*';
+
+        // Initialize socket with explicit configuration and namespace
+        const socket = io('/', {
+            transports: ['websocket', 'polling']
         });
 
         const transcriptionText = document.getElementById('transcriptionText');
@@ -108,10 +108,16 @@
         const stopButton = document.getElementById('stopButton');
         const statusIndicator = document.getElementById('statusIndicator');
 
-        // Socket event handlers
+        // Debug all incoming socket events
+        socket.onAny((eventName, ...args) => {
+            console.log('Received event:', eventName, args);
+        });
+
         socket.on('connect', () => {
-            console.log('Connected to server');
+            console.log('Connected to server with ID:', socket.id);
             statusIndicator.textContent = 'Connected';
+            statusIndicator.classList.remove('status-inactive');
+            statusIndicator.classList.add('status-active');
         });
 
         socket.on('disconnect', () => {
@@ -121,14 +127,24 @@
             statusIndicator.classList.add('status-inactive');
         });
 
-        socket.on('transcription_update', (data) => {
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+            statusIndicator.textContent = 'Connection Error';
+            statusIndicator.classList.remove('status-active');
+            statusIndicator.classList.add('status-inactive');
+        });
+
+        // Modified event handler with debug logging
+        socket.on('transcription_update', function(data) {
             console.log('Received transcription update:', data);
             
             if (data && typeof data === 'object') {
-                if ('transcription' in data && data.transcription) {
+                if (data.transcription) {
+                    console.log('Updating transcription text to:', data.transcription);
                     transcriptionText.textContent = data.transcription;
                 }
-                if ('translation' in data && data.translation) {
+                if (data.translation) {
+                    console.log('Updating translation text to:', data.translation);
                     translationText.textContent = data.translation;
                 }
             }
@@ -177,7 +193,11 @@
                 console.error('Error stopping transcription:', error);
             }
         });
-
+        console.log('Elements found:', {
+            transcriptionText: !!transcriptionText,
+            translationText: !!translationText,
+            statusIndicator: !!statusIndicator
+        });
         // Initialize button states
         stopButton.disabled = true;
     </script>
