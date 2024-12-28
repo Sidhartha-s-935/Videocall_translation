@@ -1,25 +1,20 @@
-#app.py
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
-from model2 import ContinuousTranscriber
+from model import ContinuousTranscriber
 import threading
 import multiprocessing
 from caption_window import run_caption_window
 
 app = Flask(__name__)
-socketio = SocketIO(app,cors_allowrd_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 transcriber = None
 
 @app.route('/')
 def index():
-    languages = {
-        'en': 'English',
-        'hi': 'Hindi',
-        'ta': 'Tamil',
-        'te': 'Telugu',
-        'bn': 'Bengali'
-    }
+    # Use the languages from the ContinuousTranscriber class
+    temp_transcriber = ContinuousTranscriber()
+    languages = temp_transcriber.available_languages
     return render_template('index.html', languages=languages)
 
 def transcription_callback(transcription, translation):
