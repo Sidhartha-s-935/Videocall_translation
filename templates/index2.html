@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-time Transcription</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .transcription-box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 100px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        select, button {
+            padding: 8px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Real-time Transcription</h1>
+        
+        <div class="controls">
+            <select id="languageSelect">
+                {% for code, name in languages.items() %}
+                <option value="{{ code }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+            <button id="startButton">Start Transcription</button>
+            <button id="stopButton">Stop Transcription</button>
+        </div>
+
+        <div class="transcription-box">
+            <h3>Original Text:</h3>
+            <p id="transcriptionText"></p>
+        </div>
+
+        <div class="transcription-box">
+            <h3>Translated Text:</h3>
+            <p id="translationText"></p>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const transcriptionText = document.getElementById('transcriptionText');
+        const translationText = document.getElementById('translationText');
+        const languageSelect = document.getElementById('languageSelect');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('transcription_update', (data) => {
+            console.log('Received update:', data);
+            if (data.transcription) {
+                transcriptionText.textContent = data.transcription;
+            }
+            if (data.translation) {
+                translationText.textContent = data.translation;
+            }
+        });
+
+        startButton.addEventListener('click', async () => {
+            const targetLang = languageSelect.value;
+            try {
+                const response = await fetch('/start_transcription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ target_lang: targetLang }),
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    startButton.disabled = true;
+                    stopButton.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error starting transcription:', error);
+            }
+        });
+
+        stopButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/stop_transcription', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    startButton.disabled = false;
+                    stopButton.disabled = true;
+                }
+            } catch (error) {
+                console.error('Error stopping transcription:', error);
+            }
+        });
+
+        // Initialize button states
+        stopButton.disabled = true;
+    </script>
+</body>
+</html>
+
+

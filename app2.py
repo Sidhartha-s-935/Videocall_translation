@@ -1,3 +1,4 @@
+#app.py
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 from model2 import ContinuousTranscriber
@@ -8,7 +9,6 @@ from caption_window import run_caption_window
 app = Flask(__name__)
 socketio = SocketIO(app,cors_allowrd_origins="*")
 
-# Global transcriber instance
 transcriber = None
 
 @app.route('/')
@@ -35,15 +35,12 @@ def start_transcription():
     data = request.json
     target_lang = data.get('target_lang', 'en')
     
-    # Stop existing transcription if any
     if transcriber:
         transcriber.stop_transcription()
     
-    # Create new transcriber instance
     transcriber = ContinuousTranscriber(target_language=target_lang)
     transcriber.set_callback(transcription_callback)
     
-    # Start transcription in a separate thread
     thread = threading.Thread(target=transcriber.start_transcription, daemon=True)
     thread.start()
     

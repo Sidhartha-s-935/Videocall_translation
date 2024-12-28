@@ -1,91 +1,91 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QWidget
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPalette, QColor
-import socketio
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject
+from flask_socketio import SocketIO
 import sys
+
+class SignalHandler(QObject):
+    update_caption = pyqtSignal(str)
 
 class CaptionWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Real-time Captions")
+        self.setWindowTitle('Real-time Captions')
+        self.setStyleSheet("background-color: black;")
         
-        # Set window flags to make it stay on top and frameless
         self.setWindowFlags(
             Qt.WindowStaysOnTopHint | 
             Qt.FramelessWindowHint |
-            Qt.Tool  # This prevents the window from showing in taskbar
+            Qt.Tool 
         )
         
-        # Create central widget and layout
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(central_widget)
         
-        # Create caption label
-        self.caption_label = QLabel("")
-        self.caption_label.setWordWrap(True)
-        self.caption_label.setAlignment(Qt.AlignCenter)
+        self.caption_label = QLabel()
         self.caption_label.setStyleSheet("""
             QLabel {
                 color: white;
                 font-size: 24px;
+                font-family: Arial;
                 padding: 10px;
                 background-color: rgba(0, 0, 0, 0.7);
-                border-radius: 10px;
+                border-radius: 5px;
             }
         """)
-        
-        # Set the window background to be transparent
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        
-        # Set up the layout
-        layout = QVBoxLayout()
+        self.caption_label.setWordWrap(True)
+        self.caption_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.caption_label)
-        self.central_widget.setLayout(layout)
         
-        # Set initial size and position
-        self.resize(800, 100)
-        self.move_to_bottom()
+        screen = QApplication.primaryScreen().geometry()
+        window_width = screen.width() // 2
+        window_height = 100
+        self.setGeometry(
+            (screen.width() - window_width) // 2,
+            screen.height() - window_height - 50, 
+            window_width,
+            window_height
+        )
         
-        # Initialize Socket.IO client
-        self.sio = socketio.Client()
+        self.signal_handler = SignalHandler()
+        self.signal_handler.update_caption.connect(self.update_caption)
+        
+        self.socketio = SocketIO('http://localhost:5000')
         self.setup_socketio()
         
-        # Connect to the Flask server
-        try:
-            self.sio.connect('http://localhost:5000')
-        except Exception as e:
-            print(f"Failed to connect to server: {e}")
-    
-    def move_to_bottom(self):
-        """Position the window at the bottom of the screen"""
-        screen = QApplication.primaryScreen().geometry()
-        self.move(
-            (screen.width() - self.width()) // 2,
-            screen.height() - self.height() - 50
-        )
+        self.connection_timer = QTimer()
+        self.connection_timer.timeout.connect(self.check_connection)
+        self.connection_timer.start(5000)
     
     def setup_socketio(self):
-        @self.sio.on('transcription_update')
-        def on_transcription_update(data):
-            translation = data.get('translation', '')
-            self.update_caption(translation)
+        @self.socketio.on('transcription_update')
+        def handle_transcription(data):
+            translation = data.get('translation')
+            if translation:
+                self.signal_handler.update_caption.emit(translation)
     
     def update_caption(self, text):
-        """Update the caption text"""
         self.caption_label.setText(text)
     
+    def check_connection(self):
+        try:
+            self.socketio.emit('ping')
+        except Exception as e:
+            print(f"Connection error: {e}")
+            self.socketio = SocketIO('http://localhost:5000')
+            self.setup_socketio()
+    
     def mousePressEvent(self, event):
-        """Enable window dragging"""
-        self.old_pos = event.globalPos()
+        if event.button() == Qt.LeftButton:
+            self.dragPosition = event.globalPos() - self.frameGeometry().topLeft()
+            event.accept()
     
     def mouseMoveEvent(self, event):
-        """Handle window dragging"""
-        delta = event.globalPos() - self.old_pos
-        self.move(self.x() + delta.x(), self.y() + delta.y())
-        self.old_pos = event.globalPos()
+        if event.buttons() == Qt.LeftButton:
+            self.move(event.globalPos() - self.dragPosition)
+            event.accept()
 
 def run_caption_window():
-    """Function to start the caption window"""
     app = QApplication(sys.argv)
     window = CaptionWindow()
     window.show()
