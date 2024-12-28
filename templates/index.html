@@ -8,19 +8,61 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-        }
-        .transcription-box {
+            font-family: Arial, sans-serif;
+        } .transcription-box {
             border: 1px solid #ccc;
-            padding: 15px;
-            margin: 10px 0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
             min-height: 100px;
-        }
+            background-color: #f9f9f9; }
         .controls {
             margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         select, button {
-            padding: 8px;
-            margin: 5px;
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        .text-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 10px 0;
+        }
+        .status-indicator {
+            margin-left: auto;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status-active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .status-inactive {
+            background-color: #f44336;
+            color: white;
+        }
+        h3 {
+            margin: 0;
+            color: #333;
         }
     </style>
 </head>
@@ -36,38 +78,59 @@
             </select>
             <button id="startButton">Start Transcription</button>
             <button id="stopButton">Stop Transcription</button>
+            <div id="statusIndicator" class="status-indicator status-inactive">Inactive</div>
         </div>
 
         <div class="transcription-box">
-            <h3>Original Text:</h3>
-            <p id="transcriptionText"></p>
+            <h3>Original Text (English):</h3>
+            <p id="transcriptionText" class="text-content">Waiting for speech...</p>
         </div>
 
         <div class="transcription-box">
-            <h3>Translated Text:</h3>
-            <p id="translationText"></p>
+            <h3>Translation:</h3>
+            <p id="translationText" class="text-content">Translation will appear here...</p>
         </div>
     </div>
 
     <script>
-        const socket = io();
+        // Initialize socket with explicit configuration
+        const socket = io('http://localhost:5000', {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
+        });
+
         const transcriptionText = document.getElementById('transcriptionText');
         const translationText = document.getElementById('translationText');
         const languageSelect = document.getElementById('languageSelect');
         const startButton = document.getElementById('startButton');
         const stopButton = document.getElementById('stopButton');
+        const statusIndicator = document.getElementById('statusIndicator');
 
+        // Socket event handlers
         socket.on('connect', () => {
             console.log('Connected to server');
+            statusIndicator.textContent = 'Connected';
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            statusIndicator.textContent = 'Disconnected';
+            statusIndicator.classList.remove('status-active');
+            statusIndicator.classList.add('status-inactive');
         });
 
         socket.on('transcription_update', (data) => {
-            console.log('Received update:', data);
-            if (data.transcription) {
-                transcriptionText.textContent = data.transcription;
-            }
-            if (data.translation) {
-                translationText.textContent = data.translation;
+            console.log('Received transcription update:', data);
+            
+            if (data && typeof data === 'object') {
+                if ('transcription' in data && data.transcription) {
+                    transcriptionText.textContent = data.transcription;
+                }
+                if ('translation' in data && data.translation) {
+                    translationText.textContent = data.translation;
+                }
             }
         });
 
@@ -85,6 +148,9 @@
                 if (result.status === 'success') {
                     startButton.disabled = true;
                     stopButton.disabled = false;
+                    statusIndicator.textContent = 'Active';
+                    statusIndicator.classList.remove('status-inactive');
+                    statusIndicator.classList.add('status-active');
                 }
             } catch (error) {
                 console.error('Error starting transcription:', error);
@@ -103,6 +169,9 @@
                 if (result.status === 'success') {
                     startButton.disabled = false;
                     stopButton.disabled = true;
+                    statusIndicator.textContent = 'Inactive';
+                    statusIndicator.classList.remove('status-active');
+                    statusIndicator.classList.add('status-inactive');
                 }
             } catch (error) {
                 console.error('Error stopping transcription:', error);
